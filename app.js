@@ -1,7 +1,8 @@
 const express = require('express');
+const bodyParser = require('bodyParser');
+const db = require('./routes/postgres');
 const app = express();
 const port = 8080;
-const db = require('./routes/postgres');
 
 app.use(bodyParser.json())
 app.use(
