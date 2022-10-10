@@ -1,0 +1,12 @@
+{
+  "name": "library-api",
+  "version": "0.0.1",
+  "description": "Library API on SAPUI5",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
