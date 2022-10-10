@@ -19,7 +19,7 @@ const getBooks = (req, res) => {
 
 
 const getBookById = (req, res) => {
-    const id = parseInt(req.params.id)
+    const id = parseInt(req.params.id);
 
     pool.query('SELECT * FROM books INNER JOIN books_info USING(book_id) INNER JOIN authors USING(author_id) INNER JOIN images USING(image_id) WHERE book_id = $1 ORDER BY book_id', [id], (err, data) => {
         if (err) {
@@ -119,23 +119,93 @@ const createBook = (req, res) => {
     
 }
 
-/*
-const updateUser = (req, res) => {
-    const id = parseInt(req.params.id)
-    const { name, email } = req.body
+const updateBookById = (req, res) => {
+    const id = parseInt(req.params.id);
+    const { title, subtitle, category, publish_date, editors, description, authors, image_path } = req.body;
   
     pool.query(
-        'UPDATE users SET name = $1, email = $2 WHERE id = $3',
-        [name, email, id],
+        'UPDATE books SET title = $1 WHERE book_id = $2',
+        [title, id],
         (err, data) => {
             if (err) {
-            throw err
+                throw err;
             }
-            res.status(200).send(`User modified with ID: ${id}`)
-      }
-    )
+        }
+    );
+
+    pool.query(
+        'UPDATE books_info SET subtitle = $1 WHERE book_id = $2',
+        [subtitle, id],
+        (err, data) => {
+            if (err) {
+                throw err;
+            }
+        }
+    );
+
+    pool.query(
+        'UPDATE books_info SET category = $1 WHERE book_id = $2',
+        [category, id],
+        (err, data) => {
+            if (err) {
+                throw err;
+            }
+        }
+    );
+
+    pool.query(
+        'UPDATE books_info SET publish_date = $1 WHERE book_id = $2',
+        [publish_date, id],
+        (err, data) => {
+            if (err) {
+                throw err;
+            }
+        }
+    );
+
+    pool.query(
+        'UPDATE books_info SET editors = $1 WHERE book_id = $2',
+        [editors, id],
+        (err, data) => {
+            if (err) {
+                throw err;
+            }
+        }
+    );
+
+    pool.query(
+        'UPDATE books_info SET description = $1 WHERE book_id = $2',
+        [description, id],
+        (err, data) => {
+            if (err) {
+                throw err;
+            }
+        }
+    );
+
+    pool.query(
+        'UPDATE authors SET author = $1 WHERE author = $2',
+        [authors, authors],
+        (err, data) => {
+            if (err) {
+                throw err;
+            }
+        }
+    );
+
+    pool.query(
+        'UPDATE images SET image_path = $1 WHERE image_path = $2',
+        [image_path, image_path],
+        (err, data) => {
+            if (err) {
+                throw err;
+            }
+        }
+    );
+
+    res.status(200).send(`Book modified with ID: ${id}`);
 }
-*/
+
 
 const deleteBookById = (req, res) => {
     const id = parseInt(req.params.id);
@@ -157,6 +227,7 @@ module.exports = {
     getBooks,
     getBookById,
     createBook,
+    updateBookById,
     deleteBookById
 }
 
@@ -177,7 +248,4 @@ UPDATE books_info SET description = $1 WHERE book_id = $2;
 UPDATE books_info SET author_id = $1 WHERE book_id = $2;
 UPDATE books_info SET image_id = $1 WHERE book_id = $2;
 
--> DELETE book by ID
-DELETE FROM books WHERE book_id = $1;
-DELETE FROM books_info WHERE book_id = $1;
 */
