@@ -7,7 +7,7 @@ const pool = new Pool({
   port: 5432,
 })
 
-/*
+
 const getBooks = (req, res) => {
     pool.query('SELECT * FROM books INNER JOIN books_info USING(book_id) INNER JOIN authors USING(author_id) INNER JOIN images USING(image_id) ORDER BY book_id', (err, data) => {
         if (err) {
@@ -28,7 +28,7 @@ const getBookById = (req, res) => {
         res.status(200).json(data.rows)
     })
 }
-*/
+
 
 /*
 const createUser = (req, res) => {
