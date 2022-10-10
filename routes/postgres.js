@@ -28,41 +28,95 @@ const getBookById = (req, res) => {
         res.status(200).json(data.rows);
     });
 }
-/*
-    -> POST book
-    INSERT INTO books(title, source) VALUES($1,$2) RETURNING *;
-    INSERT INTO authors(author) VALUES($1) RETURNING *;
-    INSERT INTO images(image_path) VALUES($1) RETURNING *;
-    INSERT INTO books_info(book_id, subtitle, category, publish_date, editors, description, author_id, image_id) VALUES($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *;
-*/
 
 const createBook = (req, res) => {
     const { title, authors, subtitle, category, publish_date, editors, description, image_path, source } = req.body;
 
-    pool.query('INSERT INTO books (title, source) VALUES ($1, $2) RETURNING *', [title, source], (err, data) => {
+    pool.query('SELECT * FROM books WHERE title = $1', [title], (err, data) => {
         if (err) {
             throw err;
         }
-        const book_id = data.rows[0].book_id;
-        pool.query('INSERT INTO authors (author) VALUES ($1) RETURNING *', [authors], (err, data) => {
-            if (err) {
-                throw err;
-            }
-            const author_id = data.rows[0].author_id;
-            pool.query('INSERT INTO images (image_path) VALUES ($1) RETURNING *', [image_path], (err, data) => {
+        if (data.rows[0] != undefined) {
+            res.status(200).send(`Book already added with ID: ${data.rows[0].book_id}`);
+        }
+        else {
+            pool.query('INSERT INTO books (title, source) VALUES ($1, $2) RETURNING *', [title, source], (err, data) => {
                 if (err) {
                     throw err;
                 }
-                const image_id = data.rows[0].image_id;
-                pool.query('INSERT INTO books_info(book_id, subtitle, category, publish_date, editors, description, author_id, image_id) VALUES($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *', [book_id,subtitle,category, publish_date, editors, description, author_id, image_id], (err, data) => {
+                const book_id = data.rows[0].book_id;
+                pool.query('SELECT * FROM authors WHERE author = $1', [authors], (err, data) => {
                     if (err) {
                         throw err;
                     }
-                    res.status(200).send(`Book added with ID: ${data.rows[0].book_id}`)
+                    if (data.rows[0] != undefined) {
+                        const author_id = data.rows[0].author_id;
+
+                        pool.query('SELECT * FROM images WHERE image_path = $1', [image_path], (err, data) => {
+                            if (data.rows[0] != undefined) {
+                                const image_id = data.rows[0].image_id;
+                                pool.query('INSERT INTO books_info(book_id, subtitle, category, publish_date, editors, description, author_id, image_id) VALUES($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *', [book_id,subtitle,category, publish_date, editors, description, author_id, image_id], (err, data) => {
+                                    if (err) {
+                                        throw err;
+                                    }
+                                    res.status(200).send(`Book added with ID: ${data.rows[0].book_id}`);
+                                });
+                            }
+                            else {
+                                pool.query('INSERT INTO images (image_path) VALUES ($1) RETURNING *', [image_path], (err, data) => {
+                                    if (err) {
+                                        throw err;
+                                    }
+                                    const image_id = data.rows[0].image_id;
+                                    pool.query('INSERT INTO books_info(book_id, subtitle, category, publish_date, editors, description, author_id, image_id) VALUES($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *', [book_id,subtitle,category, publish_date, editors, description, author_id, image_id], (err, data) => {
+                                        if (err) {
+                                            throw err;
+                                        }
+                                        res.status(200).send(`Book added with ID: ${data.rows[0].book_id}`);
+                                    });
+                                });
+                            }
+                        });
+                        
+                    }
+                    else {
+                        pool.query('INSERT INTO authors (author) VALUES ($1) RETURNING *', [authors], (err, data) => {
+                            if (err) {
+                                throw err;
+                            }
+                            const author_id = data.rows[0].author_id;
+                            pool.query('SELECT * FROM images WHERE image_path = $1', [image_path], (err, data) => {
+                                if (data.rows[0] != undefined) {
+                                    const image_id = data.rows[0].image_id;
+                                    pool.query('INSERT INTO books_info(book_id, subtitle, category, publish_date, editors, description, author_id, image_id) VALUES($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *', [book_id,subtitle,category, publish_date, editors, description, author_id, image_id], (err, data) => {
+                                        if (err) {
+                                            throw err;
+                                        }
+                                        res.status(200).send(`Book added with ID: ${data.rows[0].book_id}`);
+                                    });
+                                }
+                                else {
+                                    pool.query('INSERT INTO images (image_path) VALUES ($1) RETURNING *', [image_path], (err, data) => {
+                                        if (err) {
+                                            throw err;
+                                        }
+                                        const image_id = data.rows[0].image_id;
+                                        pool.query('INSERT INTO books_info(book_id, subtitle, category, publish_date, editors, description, author_id, image_id) VALUES($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *', [book_id,subtitle,category, publish_date, editors, description, author_id, image_id], (err, data) => {
+                                            if (err) {
+                                                throw err;
+                                            }
+                                            res.status(200).send(`Book added with ID: ${data.rows[0].book_id}`);
+                                        });
+                                    });
+                                }
+                            });
+                        });
+                    }
                 });
             });
-        });
+        }
     });
+    
 }
 
 /*
