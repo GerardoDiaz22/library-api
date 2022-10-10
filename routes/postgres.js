@@ -125,53 +125,47 @@ const updateUser = (req, res) => {
     const { name, email } = req.body
   
     pool.query(
-      'UPDATE users SET name = $1, email = $2 WHERE id = $3',
-      [name, email, id],
-      (err, data) => {
-        if (err) {
-          throw err
-        }
-        res.status(200).send(`User modified with ID: ${id}`)
+        'UPDATE users SET name = $1, email = $2 WHERE id = $3',
+        [name, email, id],
+        (err, data) => {
+            if (err) {
+            throw err
+            }
+            res.status(200).send(`User modified with ID: ${id}`)
       }
     )
 }
+*/
 
-const deleteUser = (req, res) => {
-    const id = parseInt(req.params.id)
+const deleteBookById = (req, res) => {
+    const id = parseInt(req.params.id);
   
-    pool.query('DELETE FROM users WHERE id = $1', [id], (err, data) => {
-      if (err) {
-        throw err
-      }
-      res.status(200).send(`User deleted with ID: ${id}`)
+    pool.query('DELETE FROM books_info WHERE book_id = $1', [id], (err, data) => {
+        if (err) {
+            throw err;
+        }
+        pool.query('DELETE FROM books WHERE book_id = $1', [id], (err, data) => {
+            if (err) {
+                throw err;
+            }
+            res.status(200).send(`Book deleted with ID: ${id}`);
+        });
     })
 }
-*/
 
 module.exports = {
     getBooks,
     getBookById,
-    createBook
-  }
+    createBook,
+    deleteBook
+}
+
 /*
-   
--> GET all books
-SELECT * FROM books INNER JOIN books_info USING(book_id) INNER JOIN authors USING(author_id) INNER JOIN images USING(image_id) ORDER BY book_id;
-
--> GET book by ID
-SELECT * FROM books INNER JOIN books_info USING(book_id) INNER JOIN authors USING(author_id) INNER JOIN images USING(image_id) WHERE book_id = $1 ORDER BY book_id;
-
 -> GET book by author
 SELECT * FROM books INNER JOIN books_info USING(book_id) INNER JOIN authors USING(author_id) INNER JOIN images USING(image_id) WHERE author = $1 ORDER BY book_id;
 
 -> GET book by category
 SELECT * FROM books INNER JOIN books_info USING(book_id) INNER JOIN authors USING(author_id) INNER JOIN images USING(image_id) WHERE category = $1 ORDER BY book_id;
-
--> POST book
-INSERT INTO books(title, source) VALUES($1,$2) RETURNING *;
-INSERT INTO books_info(book_id, subtitle, category, publish_date, editors, description, author_id, image_id) VALUES($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *;
-INSERT INTO authors(author) VALUES($1) RETURNING *;
-INSERT INTO images(image_path) VALUES($1) RETURNING *;
 
 -> PUT att book by ID
 UPDATE books SET title = $1 WHERE book_id = $2;
