@@ -37,34 +37,31 @@ const getBookById = (req, res) => {
 */
 
 const createBook = (req, res) => {
-    const { title, authors, subtitle, category, publish_date, editors, description, image, source } = req.body;
-    
+    const { title, authors, subtitle, category, publish_date, editors, description, image_path, source } = req.body;
+
     pool.query('INSERT INTO books (title, source) VALUES ($1, $2) RETURNING *', [title, source], (err, data) => {
         if (err) {
             throw err;
         }
         const book_id = data.rows[0].book_id;
-    });
-
-    pool.query('INSERT INTO authors (author) VALUES ($1) RETURNING *', [authors], (err, data) => {
-        if (err) {
-            throw err;
-        }
-        const author_id = data.rows[0].author_id;
-    });
-
-    pool.query('INSERT INTO images (image_path) VALUES ($1) RETURNING *', [image], (err, data) => {
-        if (err) {
-            throw err;
-        }
-        const image_id = data.rows[0].image_id;
-    });
-
-    pool.query('INSERT INTO books_info(book_id, subtitle, category, publish_date, editors, description, author_id, image_id) VALUES($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *', [book_id,subtitle,category, publish_date, editors, description, author_id, image_id], (err, data) => {
-        if (err) {
-            throw err;
-        }
-        res.status(200).send(`Book added with ID: ${data.rows[0].boo_info_id}`)
+        pool.query('INSERT INTO authors (author) VALUES ($1) RETURNING *', [authors], (err, data) => {
+            if (err) {
+                throw err;
+            }
+            const author_id = data.rows[0].author_id;
+            pool.query('INSERT INTO images (image_path) VALUES ($1) RETURNING *', [image_path], (err, data) => {
+                if (err) {
+                    throw err;
+                }
+                const image_id = data.rows[0].image_id;
+                pool.query('INSERT INTO books_info(book_id, subtitle, category, publish_date, editors, description, author_id, image_id) VALUES($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *', [book_id,subtitle,category, publish_date, editors, description, author_id, image_id], (err, data) => {
+                    if (err) {
+                        throw err;
+                    }
+                    res.status(200).send(`Book added with ID: ${data.rows[0].book_id}`)
+                });
+            });
+        });
     });
 }
 
