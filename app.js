@@ -14,7 +14,7 @@ app.get('/books', db.getBooks);
 
 app.post('/books', db.createBook);
 
-app.get('/books/:id', db.getBooks);
+app.get('/books/:id', db.getBookById);
 
 
 app.listen(port, () => {
