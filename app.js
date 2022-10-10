@@ -16,6 +16,8 @@ app.post('/books', db.createBook);
 
 app.get('/books/:id', db.getBookById);
 
+app.delete('/books/:id', db.deleteBookById);
+
 
 app.listen(port, () => {
     console.log(`Listening on port: ${port}...`);
