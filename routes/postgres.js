@@ -157,7 +157,7 @@ module.exports = {
     getBooks,
     getBookById,
     createBook,
-    deleteBook
+    deleteBookById
 }
 
 /*
