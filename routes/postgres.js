@@ -184,25 +184,45 @@ const updateBookById = (req, res) => {
     );
 
     pool.query(
-        'UPDATE authors SET author = $1 WHERE author = $2',
-        [authors, authors],
+        'SELECT author_id FROM books_info WHERE book_id = $1',
+        [id],
         (err, data) => {
             if (err) {
                 throw err;
             }
+            const author_id = data.rows[0].author_id;
+            pool.query(
+                'UPDATE authors SET author = $1 WHERE author_id = $2',
+                [authors,author_id],
+                (err, data) => {
+                    if (err) {
+                        throw err;
+                    }
+                }
+            );
         }
     );
-
+    
     pool.query(
-        'UPDATE images SET image_path = $1 WHERE image_path = $2',
-        [image_path, image_path],
+        'SELECT image_id FROM books_info WHERE book_id = $1',
+        [id],
         (err, data) => {
             if (err) {
                 throw err;
             }
+            const image_id = data.rows[0].image_id;
+            pool.query(
+                'UPDATE images SET image_path = $1 WHERE image_id = $2',
+                [image_path, image_id],
+                (err, data) => {
+                    if (err) {
+                        throw err;
+                    }
+                }
+            );
         }
     );
-
+    
     res.status(200).send(`Book modified with ID: ${id}`);
 }
 
