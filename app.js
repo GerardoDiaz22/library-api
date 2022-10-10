@@ -12,7 +12,10 @@ app.get('/', (req, res) => {
 
 app.get('/books', db.getBooks);
 
+app.post('/books', db.createBook);
+
 app.get('/books/:id', db.getBooks);
+
 
 app.listen(port, () => {
     console.log(`Listening on port: ${port}...`);
