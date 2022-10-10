@@ -99,7 +99,8 @@ const deleteUser = (req, res) => {
 
 module.exports = {
     getBooks,
-    getBookById
+    getBookById,
+    createBook
   }
 /*
    
