@@ -9,18 +9,20 @@ const pool = new Pool({
 
 
 const getBooks = (req, res) => {
+    
+    const title = (typeof req.query.title === 'undefined') ? '' : req.query.title;
+    const authors = (typeof req.query.authors === 'undefined') ? '' : req.query.authors;
+    const category = (typeof req.query.category === 'undefined') ? '' : req.query.category;
 
-    const title = req.query.title;
-    const authors = req.query.authors;
-    const category = req.query.category;
-
-    pool.query("SELECT * FROM books INNER JOIN books_info USING(book_id) INNER JOIN authors USING(author_id) INNER JOIN images USING(image_id) WHERE title LIKE '$1' ORDER BY book_id",[title,authors,category])
+    pool.query("SELECT * FROM books INNER JOIN books_info USING(book_id) INNER JOIN authors USING(author_id) INNER JOIN images USING(image_id) WHERE title ILIKE $1 AND author ILIKE $2 ORDER BY book_id",
+    [title+'%',authors+'%'])
     .then((data) => {
         res.status(200).json(data.rows);
     })
     .catch((err) => {
         throw err
     });
+    
     /*
         pool.query('SELECT * FROM books INNER JOIN books_info USING(book_id) INNER JOIN authors USING(author_id) INNER JOIN images USING(image_id) ORDER BY book_id', (err, data) => {
             if (err) {
@@ -34,39 +36,6 @@ const getBooks = (req, res) => {
 const getBookById = (req, res) => {
     const id = parseInt(req.params.id);
     pool.query('SELECT * FROM books INNER JOIN books_info USING(book_id) INNER JOIN authors USING(author_id) INNER JOIN images USING(image_id) WHERE book_id = $1 ORDER BY book_id', [id])
-    .then((data) => {
-        res.status(200).json(data.rows);
-    })
-    .catch((err) => {
-        throw err
-    });
-}
-
-const getBooksByTitle = (req, res) => {
-    const { title } = req.body;
-    pool.query('SELECT * FROM books INNER JOIN books_info USING(book_id) INNER JOIN authors USING(author_id) INNER JOIN images USING(image_id) WHERE title = $1 ORDER BY book_id', [title])
-    .then((data) => {
-        res.status(200).json(data.rows);
-    })
-    .catch((err) => {
-        throw err
-    });
-}
-
-const getBooksByCategory = (req, res) => {
-    const { category } = req.body;
-    pool.query('SELECT * FROM books INNER JOIN books_info USING(book_id) INNER JOIN authors USING(author_id) INNER JOIN images USING(image_id) WHERE category = $1 ORDER BY book_id', [category])
-    .then((data) => {
-        res.status(200).json(data.rows);
-    })
-    .catch((err) => {
-        throw err
-    });
-}
-
-const getBooksByAuthor = (req, res) => {
-    const { authors } = req.body;
-    pool.query('SELECT * FROM books INNER JOIN books_info USING(book_id) INNER JOIN authors USING(author_id) INNER JOIN images USING(image_id) WHERE authors = $1 ORDER BY book_id', [authors])
     .then((data) => {
         res.status(200).json(data.rows);
     })

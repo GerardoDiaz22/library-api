@@ -1,6 +1,6 @@
 const express = require('express');
 const path = require('path');
-const db = require('./routes/postgres');
+const db = require('./uimodule/webapp/libs/postgres');
 const app = express();
 require('dotenv').config()
 
