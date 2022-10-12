@@ -9,7 +9,12 @@ const pool = new Pool({
 
 
 const getBooks = (req, res) => {
-    pool.query('SELECT * FROM books INNER JOIN books_info USING(book_id) INNER JOIN authors USING(author_id) INNER JOIN images USING(image_id) ORDER BY book_id')
+
+    const title = req.query.title;
+    const authors = req.query.authors;
+    const category = req.query.category;
+
+    pool.query("SELECT * FROM books INNER JOIN books_info USING(book_id) INNER JOIN authors USING(author_id) INNER JOIN images USING(image_id) WHERE title LIKE '$1' ORDER BY book_id",[title,authors,category])
     .then((data) => {
         res.status(200).json(data.rows);
     })
@@ -243,9 +248,6 @@ const deleteBookById = (req, res) => {
 module.exports = {
     getBooks,
     getBookById,
-    getBooksByAuthor,
-    getBooksByTitle,
-    getBooksByCategory,
     createBook,
     updateBookById,
     deleteBookById

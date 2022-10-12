@@ -11,7 +11,7 @@ app.use(express.json());
 
 app.use("/", express.static(path.join(__dirname, './uimodule/webapp')));
 
-app.get('/books', db.getBooks);
+app.get('/books?', db.getBooks);
 
 app.post('/books', db.createBook);
 
