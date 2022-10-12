@@ -14,8 +14,8 @@ const getBooks = (req, res) => {
     const authors = (typeof req.query.authors === 'undefined') ? '' : req.query.authors;
     const category = (typeof req.query.category === 'undefined') ? '' : req.query.category;
 
-    pool.query("SELECT * FROM books INNER JOIN books_info USING(book_id) INNER JOIN authors USING(author_id) INNER JOIN images USING(image_id) WHERE title ILIKE $1 AND author ILIKE $2 ORDER BY book_id",
-    [title+'%',authors+'%'])
+    pool.query("SELECT * FROM books INNER JOIN books_info USING(book_id) INNER JOIN authors USING(author_id) INNER JOIN images USING(image_id) WHERE title ILIKE $1 AND author ILIKE $2 AND category ILIKE $3 ORDER BY book_id",
+    [title+'%',authors+'%',category+'%'])
     .then((data) => {
         res.status(200).json(data.rows);
     })
