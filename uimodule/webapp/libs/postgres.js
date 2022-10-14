@@ -41,6 +41,7 @@ const getBooks = (req, res, next) => {
     .then((data) => {
         if (data.rows[0] != undefined) {
             res.status(200).json(data.rows);
+            next();
             return;
         }
         return axios.get(`https://www.googleapis.com/books/v1/volumes?q=${title}`);
@@ -71,6 +72,7 @@ const getBooks = (req, res, next) => {
                 }
             });
             res.status(200).json(book);
+            next();
         }
     })
     .catch((err) => {
@@ -83,12 +85,12 @@ const getBookById = (req, res) => {
     pool.query('SELECT * FROM books INNER JOIN books_info USING(book_id) INNER JOIN authors USING(author_id) INNER JOIN images USING(image_id) WHERE book_id = $1 ORDER BY book_id', [id])
     .then((data) => {
         res.status(200).json(data.rows);
+        next();
     })
     .catch((err) => {
         throw err;
     });
 }
-
 
 const createBook = async(req, res, next) => {
     const { title, authors, subtitle, category, publish_date, editors, description, image_path, source } = req.body;
@@ -161,6 +163,7 @@ const updateBookById = (req, res) => {
     })
     .then( () => {
         res.status(200).send(`Book modified with ID: ${id}`);
+        next();
     })
     .catch( (err) => {
         throw err;
@@ -168,7 +171,7 @@ const updateBookById = (req, res) => {
 
 }
 
-const deleteBookById = (req, res) => {
+const deleteBookById = (req, res, next) => {
     const id = parseInt(req.params.id);
   
     pool.query('DELETE FROM books_info WHERE book_id = $1', [id])
@@ -177,6 +180,7 @@ const deleteBookById = (req, res) => {
     })
     .then( () => {
         res.status(200).send(`Book deleted with ID: ${id}`);
+        next();
     })
     .catch( (err) => {
         throw err;
