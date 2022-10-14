@@ -7,30 +7,75 @@ const pool = new Pool({
   port: 5432,
 });
 
+const axios = require('axios');
 
-const getBooks = (req, res) => {
+const getBooks = (req, res, next) => {
     
     const title = (typeof req.query.title === 'undefined') ? '' : req.query.title;
+    const source = (typeof req.query.source === 'undefined') ? '' : req.query.source;
     const authors = (typeof req.query.authors === 'undefined') ? '' : req.query.authors;
+    const editors = (typeof req.query.editors === 'undefined') ? '' : req.query.editors;
+    const subtitle = (typeof req.query.subtitle === 'undefined') ? '' : req.query.subtitle;
     const category = (typeof req.query.category === 'undefined') ? '' : req.query.category;
+    const description = (typeof req.query.description === 'undefined') ? '' : req.query.description;
+    // const publish_date = (typeof req.query.publish_date === 'undefined') ? '' : req.query.publish_date;
 
-    pool.query("SELECT * FROM books INNER JOIN books_info USING(book_id) INNER JOIN authors USING(author_id) INNER JOIN images USING(image_id) WHERE title ILIKE $1 AND author ILIKE $2 AND category ILIKE $3 ORDER BY book_id",
-    [title+'%',authors+'%',category+'%'])
+    pool.query("SELECT * FROM books INNER JOIN books_info USING(book_id) INNER JOIN authors USING(author_id) INNER JOIN images USING(image_id) WHERE \
+        title ILIKE $1 AND \
+        source ILIKE $2 AND \
+        author ILIKE $3 AND \
+        editors ILIKE $4 AND \
+        subtitle ILIKE $5 AND \
+        category ILIKE $6 AND \
+        description ILIKE $7 \
+        ORDER BY book_id",
+    [
+        '%'+title+'%',
+        '%'+source+'%',
+        '%'+authors+'%',
+        '%'+editors+'%',
+        '%'+subtitle+'%',
+        '%'+category+'%',
+        '%'+description+'%'
+    ])
     .then((data) => {
-        res.status(200).json(data.rows);
+        if (data.rows[0] != undefined) {
+            res.status(200).json(data.rows);
+            return;
+        }
+        return axios.get(`https://www.googleapis.com/books/v1/volumes?q=${title}`);
+    })
+    .then((googleRes) => {
+        if (googleRes != undefined) {
+            let { title, subtitle, authors, description, publishedDate, publisher, categories, imageLinks } = googleRes.data.items[0].volumeInfo;
+
+            publisher = (typeof publisher === 'undefined') ? '' : publisher;
+            subtitle = (typeof subtitle === 'undefined') ? '' : subtitle;
+            description = (typeof description === 'undefined') ? '' : description;
+            categories = (typeof categories === 'undefined') ? '' : categories;
+
+            book = {
+                "title" : title,
+                "authors" : authors[0],
+                "subtitle" : subtitle,
+                "category" : categories[0],
+                "source" : "Google Books",
+                "description" : description,
+                "publish_date" : '1999-10-10', //TODO: Process date in google response
+                "image_path" : imageLinks.smallThumbnail,
+                "editors" : publisher
+            }
+            axios.post('http://localhost:8000/books', book, {
+                headers: {
+                    "Content-type": "application/json; charset=UTF-8",
+                }
+            });
+            res.status(200).json(book);
+        }
     })
     .catch((err) => {
         throw err
     });
-    
-    /*
-        pool.query('SELECT * FROM books INNER JOIN books_info USING(book_id) INNER JOIN authors USING(author_id) INNER JOIN images USING(image_id) ORDER BY book_id', (err, data) => {
-            if (err) {
-                throw err;
-            }
-            res.status(200).json(data.rows);
-        })
-    */
 }
 
 const getBookById = (req, res) => {
@@ -40,51 +85,75 @@ const getBookById = (req, res) => {
         res.status(200).json(data.rows);
     })
     .catch((err) => {
-        throw err
+        throw err;
     });
 }
 
-/*
-const createBookAlt = (req, res) => {
+
+const createBook = async(req, res, next) => {
     const { title, authors, subtitle, category, publish_date, editors, description, image_path, source } = req.body;
     
-    pool.query('SELECT * FROM books WHERE title = $1', [title])
-    .then((data) => {
-        if (data.rows[0] != undefined) {
-            res.status(200).send(`Book already added with ID: ${data.rows[0].book_id}`);
+    try {
+        const db_books =  await pool.query('SELECT * FROM books WHERE title = $1', [title]);
+        if (db_books.rows[0] !== undefined) {
+            res.status(200).send(`Book already added with ID: ${db_books.rows[0].book_id}`);
+            next();
         }
-        return pool.query('INSERT INTO books (title, source) VALUES ($1, $2) RETURNING *', [title, source])
-    })
-    .then((data) => {
-        const book_id = data.rows[0].book_id;
-    }).catch((err) => {
-        throw err
-    });
-    
-}*/
+        else {
+            const db_book = await pool.query('INSERT INTO books (title, source) VALUES ($1, $2) RETURNING *', [title, source]);
+            const book_id = db_book.rows[0].book_id;
+            
+            const db_author = await pool.query('SELECT * FROM authors WHERE author = $1', [authors]);
+
+            let author_id = (db_author.rows[0] !== undefined) ? db_author :
+            await pool.query('INSERT INTO authors (author) VALUES ($1) RETURNING *', [authors]);
+            author_id = author_id.rows[0].author_id;
+
+            const db_image = await pool.query('SELECT * FROM images WHERE image_path = $1', [image_path]);
+            
+            let image_id = (db_image.rows[0] !== undefined) ? db_image :
+            await pool.query('INSERT INTO images (image_path) VALUES ($1) RETURNING *', [image_path]);
+            image_id = image_id.rows[0].image_id
+            
+            const book = await pool.query('INSERT INTO books_info(book_id, subtitle, category, publish_date, editors, description, author_id, image_id) VALUES($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *', [book_id,subtitle,category, publish_date, editors, description, author_id, image_id]);
+            res.status(200).send(`Book added with ID: ${book.rows[0].book_id}`);
+        }
+    }
+    catch (err) {
+        throw err;
+    }
+}
 
 // TODO: Refactor createBook into createBookAlt (using then-catch handlers)
+/*
+
 const createBook = (req, res) => {
     const { title, authors, subtitle, category, publish_date, editors, description, image_path, source } = req.body;
-
+    console.log('createBook...');
     pool.query('SELECT * FROM books WHERE title = $1', [title], (err, data) => {
+        console.log('title...');
         if (err) {
             throw err;
         }
         if (data.rows[0] != undefined) {
+            console.log('exist book...');
             res.status(200).send(`Book already added with ID: ${data.rows[0].book_id}`);
+            console.log('exist book...');
         }
         else {
             pool.query('INSERT INTO books (title, source) VALUES ($1, $2) RETURNING *', [title, source], (err, data) => {
+                console.log('insert title...');
                 if (err) {
                     throw err;
                 }
                 const book_id = data.rows[0].book_id;
                 pool.query('SELECT * FROM authors WHERE author = $1', [authors], (err, data) => {
+                    
                     if (err) {
                         throw err;
                     }
                     if (data.rows[0] != undefined) {
+                        console.log('exist author...');
                         const author_id = data.rows[0].author_id;
 
                         pool.query('SELECT * FROM images WHERE image_path = $1', [image_path], (err, data) => {
@@ -104,6 +173,7 @@ const createBook = (req, res) => {
                                     }
                                     const image_id = data.rows[0].image_id;
                                     pool.query('INSERT INTO books_info(book_id, subtitle, category, publish_date, editors, description, author_id, image_id) VALUES($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *', [book_id,subtitle,category, publish_date, editors, description, author_id, image_id], (err, data) => {
+                                        console.log('insert book_info...');
                                         if (err) {
                                             throw err;
                                         }
@@ -115,10 +185,12 @@ const createBook = (req, res) => {
                         
                     }
                     else {
+                        console.log('no exist author...');
                         pool.query('INSERT INTO authors (author) VALUES ($1) RETURNING *', [authors], (err, data) => {
                             if (err) {
                                 throw err;
                             }
+                            console.log('insert author...');
                             const author_id = data.rows[0].author_id;
                             pool.query('SELECT * FROM images WHERE image_path = $1', [image_path], (err, data) => {
                                 if (data.rows[0] != undefined) {
@@ -137,6 +209,7 @@ const createBook = (req, res) => {
                                         }
                                         const image_id = data.rows[0].image_id;
                                         pool.query('INSERT INTO books_info(book_id, subtitle, category, publish_date, editors, description, author_id, image_id) VALUES($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *', [book_id,subtitle,category, publish_date, editors, description, author_id, image_id], (err, data) => {
+                                            console.log('insert book_info...');
                                             if (err) {
                                                 throw err;
                                             }
@@ -153,6 +226,8 @@ const createBook = (req, res) => {
     });
     
 }
+
+*/
 
 const updateBookById = (req, res) => {
     const id = parseInt(req.params.id);
