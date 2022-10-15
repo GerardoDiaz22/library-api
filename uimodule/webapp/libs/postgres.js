@@ -72,7 +72,7 @@ const getBooks = (req, res, next) => {
                 }
             });
             res.status(200).json(book);
-            next();
+            
         }
     })
     .catch((err) => {
@@ -80,12 +80,12 @@ const getBooks = (req, res, next) => {
     });
 }
 
-const getBookById = (req, res) => {
+const getBookById = (req, res, next) => {
     const id = parseInt(req.params.id);
     pool.query('SELECT * FROM books INNER JOIN books_info USING(book_id) INNER JOIN authors USING(author_id) INNER JOIN images USING(image_id) WHERE book_id = $1 ORDER BY book_id', [id])
     .then((data) => {
         res.status(200).json(data.rows);
-        next();
+        
     })
     .catch((err) => {
         throw err;
@@ -99,7 +99,7 @@ const createBook = async(req, res, next) => {
         const db_books =  await pool.query('SELECT * FROM books WHERE title = $1', [title]);
         if (db_books.rows[0] !== undefined) {
             res.status(200).send(`Book already added with ID: ${db_books.rows[0].book_id}`);
-            next();
+            
         }
         else {
             const db_book = await pool.query('INSERT INTO books (title, source) VALUES ($1, $2) RETURNING *', [title, source]);
@@ -126,7 +126,7 @@ const createBook = async(req, res, next) => {
     }
 }
 
-const updateBookById = (req, res) => {
+const updateBookById = (req, res, next) => {
     const id = parseInt(req.params.id);
     const { title, subtitle, category, publish_date, editors, description, authors, image_path } = req.body;
   
@@ -163,7 +163,6 @@ const updateBookById = (req, res) => {
     })
     .then( () => {
         res.status(200).send(`Book modified with ID: ${id}`);
-        next();
     })
     .catch( (err) => {
         throw err;
@@ -180,7 +179,6 @@ const deleteBookById = (req, res, next) => {
     })
     .then( () => {
         res.status(200).send(`Book deleted with ID: ${id}`);
-        next();
     })
     .catch( (err) => {
         throw err;
