@@ -2,33 +2,8 @@
     xmlns:mvc="sap.ui.core.mvc"
     displayBlock="true"
     xmlns="sap.m"
-    xmlns:table="sap.ui.table"
->
+    xmlns:table="sap.ui.table">
     <Page id="page" title="{i18n>title}">
-        <Panel
-            headerText="Header"
-        >
-            <content>
-                <table:Table id="bookshelf" rows="{/}">
-                    <table:title>
-                        <Text text="Bookshelf"></Text>
-                    </table:title>
-                    <table:columns>
-                        <table:Column sortProperty="title" filterProperty="title">
-                            <Label text="Book Title"/>
-                            <table:template>
-                                <Text text="{title}"></Text>
-                            </table:template>
-                        </table:Column>
-                        <table:Column sortProperty="source" filterProperty="source">
-                            <Label text="Book Source"/>
-                            <table:template>
-                                <Text text="{source}"></Text>
-                            </table:template>
-                        </table:Column>
-                    </table:columns>
-                </table:Table>
-            </content>
-        </Panel>
+        <mvc:XMLView viewName="lib.app.libAPI.view.Get"/>
     </Page>
 </mvc:View>
