@@ -1,0 +1,56 @@
+<mvc:View controllerName="lib.app.libAPI.controller.Home"
+    xmlns:mvc="sap.ui.core.mvc"
+    displayBlock="true"
+    xmlns="sap.m"
+    xmlns:table="sap.ui.table">
+    <Page
+        id="page"
+        title="{i18n>title}">
+        <Panel
+            headerText="Library">
+            <content>
+                <Button
+                    id="displayNotFoundBtn"
+                    text="{i18n>DisplayNotFound}"
+                    press=".onDisplayNotFound"
+                    class="sapUiTinyMarginEnd"/>
+                <GenericTile
+                    class="sapUiTinyMarginTop sapUiMediumMarginEnd tileLayout"
+                    header="CREATE"
+                    press="onPress"
+                    subheader="HTTP POST">
+                    <TileContent>
+                        <ImageContent src="sap-icon://request" />
+                    </TileContent>
+                </GenericTile>
+                <GenericTile
+                    class="sapUiTinyMarginTop sapUiMediumMarginEnd tileLayout"
+                    header="READ"
+                    press="onPress"
+                    subheader="HTTP GET">
+                    <TileContent>
+                        <ImageContent src="sap-icon://inspection" />
+                    </TileContent>
+                </GenericTile>
+                <GenericTile
+                    class="sapUiTinyMarginTop sapUiMediumMarginEnd tileLayout"
+                    header="UPDATE"
+                    press="onPress"
+                    subheader="HTTP PUT">
+                    <TileContent>
+                        <ImageContent src="sap-icon://create-form" />
+                    </TileContent>
+                </GenericTile>
+                <GenericTile
+                    class="sapUiTinyMarginTop tileLayout"
+                    header="DELETE"
+                    press="onPress"
+                    subheader="HTTP DELETE">
+                    <TileContent>
+                        <ImageContent src="sap-icon://delete" />
+                    </TileContent>
+                </GenericTile>
+            </content>
+        </Panel>
+    </Page>
+</mvc:View>
