@@ -1,5 +1,8 @@
-sap.ui.define(
-    ["sap/ui/core/mvc/Controller", "sap/ui/core/routing/History", "sap/ui/core/UIComponent", "lib/app/libAPI/model/formatter"],
+sap.ui.define([
+    "sap/ui/core/mvc/Controller",
+    "sap/ui/core/routing/History",
+    "sap/ui/core/UIComponent",
+    "lib/app/libAPI/model/formatter"],
     /**
      * @param {typeof sap.ui.core.mvc.Controller} Controller
      * @param {typeof sap.ui.core.routing.History} History
