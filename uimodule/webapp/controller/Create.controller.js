@@ -12,7 +12,6 @@ sap.ui.define([
                 
             },
             onCreatePress: function () {
-                console.log('Press...');
                 const title = this.getView().byId("bookTitle").getValue();
                 const subtitle = this.getView().byId("bookSubtitle").getValue();
                 const authors = this.getView().byId("bookAuthors").getValue();
