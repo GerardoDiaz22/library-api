@@ -24,3 +24,7 @@ sap.ui.define([
         });
     }
 );
+
+ //TODO: Make fragment for displaying image in fullscreen
+ //TODO: Make fragment for displaying description in fullscreen
+ //TODO: onclick row route info to create if on google books mode
