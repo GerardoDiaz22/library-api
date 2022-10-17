@@ -81,9 +81,24 @@
           "target": "home"
         },
         {
+          "pattern": "create",
+          "name": "create",
+          "target": "create"
+        },
+        {
           "pattern": "get",
           "name": "get",
           "target": "get"
+        },
+        {
+          "pattern": "put",
+          "name": "put",
+          "target": "put"
+        },
+        {
+          "pattern": "delete",
+          "name": "delete",
+          "target": "delete"
         }
       ],
       "targets": {
@@ -97,9 +112,24 @@
           "name": "NotFound",
           "transition": "show"
         },
+        "create": {
+          "id": "create",
+          "name": "Create",
+          "level": 2
+        },
         "get": {
           "id": "get",
           "name": "Get",
+          "level": 2
+        },
+        "put": {
+          "id": "put",
+          "name": "Put",
+          "level": 2
+        },
+        "delete": {
+          "id": "delete",
+          "name": "Delete",
           "level": 2
         }
       }
