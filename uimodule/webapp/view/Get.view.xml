@@ -3,8 +3,10 @@
     displayBlock="true"
     xmlns="sap.m"
     xmlns:table="sap.ui.table">
-    <Panel
-        headerText="Header">
+    <Page
+        title="Read Database"
+        showNavButton="true"
+		navButtonPress="onNavBack">
         <content>
             <table:Table id="bookshelf" rows="{/}">
                 <table:title>
@@ -26,5 +28,5 @@
                 </table:columns>
             </table:Table>
         </content>
-    </Panel>
+    </Page>
 </mvc:View>
