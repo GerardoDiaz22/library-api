@@ -18,11 +18,10 @@ sap.ui.define(
                     dataType: 'json'
                 })
                 .done((res) => {
-                    console.log(res);
                     oModel.setData(res);
                 });
                 
-            },
+            }
         });
     }
 );
