@@ -1,5 +1,7 @@
 <mvc:View controllerName="lib.app.libAPI.controller.Delete"
     xmlns:mvc="sap.ui.core.mvc"
+    xmlns:form="sap.ui.layout.form"
+    xmlns:layout="sap.ui.layout"
     displayBlock="true"
     xmlns="sap.m">
     <Page
@@ -7,7 +9,31 @@
         showNavButton="true"
 		navButtonPress="onNavBack">
         <content>
-            
+            <form:SimpleForm
+                id="createForm"
+                title="Delete Book"
+                editable="true"
+                layout="ResponsiveGridLayout"
+                singleContainerFullSize="false"
+                adjustLabelSpan="false"
+                labelSpanL="4"
+                emptySpanL="4"
+                columnsL="1">
+                <form:content>
+                    <Label text="Book ID" labelFor="bookID"></Label>
+                    <Input
+                        id="bookID"
+                        required="true"
+                        type="Number"
+                        placeholder="69"></Input>
+                </form:content>
+            </form:SimpleForm>
         </content>
+        <footer>
+            <OverflowToolbar>
+				<ToolbarSpacer/>
+				<Button text="Delete" type="Reject" icon="sap-icon://delete" press="onDeletePress"/>
+			</OverflowToolbar>
+        </footer>
     </Page>
 </mvc:View>
