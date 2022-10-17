@@ -6,6 +6,9 @@
         title="Read Database"
         showNavButton="true"
 		navButtonPress="onNavBack">
+        <headerContent>
+            <Button text="Refresh" icon="sap-icon://refresh" press="onRefreshPress"/>
+        </headerContent>
         <content>
             <Table
                 id="bookshelf"
@@ -50,7 +53,7 @@
                             <Text text="{book_id}"/>
                             <Text text="{title}"/>
                             <Text text="{subtitle}"/>
-                            <Text text="{authors}"/>
+                            <Text text="{author}"/>
                             <Text text="{editors}"/>
                             <Text text="{category}"/>
                             <Text text="{publish_date}"/>
