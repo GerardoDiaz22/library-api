@@ -1,8 +1,8 @@
 sap.ui.define([
-    "sap/ui/core/mvc/Controller"
+    "./BaseController"
  ], function (Controller) {
     "use strict";
-    return Controller.extend("sap.ui.demo.nav.controller.NotFound", {
+    return Controller.extend("lib.app.libAPI.controller.NotFound", {
        onInit: function () {
        }
     });
