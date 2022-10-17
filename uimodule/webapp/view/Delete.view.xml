@@ -1,0 +1,13 @@
+<mvc:View controllerName="lib.app.libAPI.controller.Get"
+    xmlns:mvc="sap.ui.core.mvc"
+    displayBlock="true"
+    xmlns="sap.m">
+    <Page
+        title="Delete Database"
+        showNavButton="true"
+		navButtonPress="onNavBack">
+        <content>
+            
+        </content>
+    </Page>
+</mvc:View>
