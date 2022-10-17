@@ -10,7 +10,7 @@
 		navButtonPress="onNavBack">
         <content>
             <form:SimpleForm
-                id="createForm"
+                id="deleteForm"
                 title="Delete Book"
                 editable="true"
                 layout="ResponsiveGridLayout"
