@@ -1,4 +1,4 @@
-<mvc:View controllerName="lib.app.libAPI.controller.Get"
+<mvc:View controllerName="lib.app.libAPI.controller.Create"
     xmlns:mvc="sap.ui.core.mvc"
     displayBlock="true"
     xmlns="sap.m">
