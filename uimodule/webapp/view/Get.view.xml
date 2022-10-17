@@ -14,6 +14,9 @@
                 }">
                 <columns>
                     <Column>
+                        <Text text="ID"/>
+                    </Column>
+                    <Column>
                         <Text text="Title"/>
                     </Column>
                     <Column>
@@ -44,6 +47,7 @@
                 <items>
                     <ColumnListItem vAlign="Middle">
                         <cells>
+                            <Text text="{book_id}"/>
                             <Text text="{title}"/>
                             <Text text="{subtitle}"/>
                             <Text text="{authors}"/>
