@@ -1,32 +1,62 @@
 <mvc:View controllerName="lib.app.libAPI.controller.Get"
     xmlns:mvc="sap.ui.core.mvc"
     displayBlock="true"
-    xmlns="sap.m"
-    xmlns:table="sap.ui.table">
+    xmlns="sap.m">
     <Page
         title="Read Database"
         showNavButton="true"
 		navButtonPress="onNavBack">
         <content>
-            <table:Table id="bookshelf" rows="{/}">
-                <table:title>
-                    <Text text="Bookshelf"></Text>
-                </table:title>
-                <table:columns>
-                    <table:Column sortProperty="title" filterProperty="title">
-                        <Label text="Book Title"/>
-                        <table:template>
-                            <Text text="{title}"></Text>
-                        </table:template>
-                    </table:Column>
-                    <table:Column sortProperty="source" filterProperty="source">
-                        <Label text="Book Source"/>
-                        <table:template>
-                            <Text text="{source}"></Text>
-                        </table:template>
-                    </table:Column>
-                </table:columns>
-            </table:Table>
+            <Table
+                id="bookshelf"
+                items="{
+                    path: '/'
+                }">
+                <columns>
+                    <Column>
+                        <Text text="Title"/>
+                    </Column>
+                    <Column>
+                        <Text text="Subtitle"/>
+                    </Column>
+                    <Column>
+                        <Text text="Authors"/>
+                    </Column>
+                    <Column>
+                        <Text text="Editors"/>
+                    </Column>
+                    <Column>
+                        <Text text="Category"/>
+                    </Column>
+                    <Column>
+                        <Text text="Publish Date"/>
+                    </Column>
+                    <Column>
+                        <Text text="Image"/>
+                    </Column>
+                    <Column>
+                        <Text text="Description"/>
+                    </Column>
+                    <Column>
+                        <Text text="Source"/>
+                    </Column>
+                </columns>
+                <items>
+                    <ColumnListItem vAlign="Middle">
+                        <cells>
+                            <Text text="{title}"/>
+                            <Text text="{subtitle}"/>
+                            <Text text="{authors}"/>
+                            <Text text="{editors}"/>
+                            <Text text="{category}"/>
+                            <Text text="{publish_date}"/>
+                            <Image width="125px" src="{image_path}"/>
+                            <ExpandableText text="{description}"/>
+                            <Text text="{source}"/>
+                        </cells>
+                    </ColumnListItem>
+                </items>
+            </Table>
         </content>
     </Page>
 </mvc:View>
