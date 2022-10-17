@@ -25,7 +25,7 @@
                         id="bookID"
                         required="true"
                         type="Number"
-                        placeholder="69"></Input>
+                        placeholder="70"></Input>
                 </form:content>
             </form:SimpleForm>
         </content>
