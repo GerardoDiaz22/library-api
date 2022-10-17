@@ -20,6 +20,10 @@ sap.ui.define([
                 .done((res) => {
                     oModel.setData(res);
                 });
+            },
+            onRefreshPress: function () {
+                //TODO: refresh table alone
+                location.reload();
             }
         });
     }
