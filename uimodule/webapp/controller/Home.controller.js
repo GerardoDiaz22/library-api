@@ -10,8 +10,17 @@ sap.ui.define(
             onInit: function () {
                 
             },
+            onNavToCreate: function () {
+                this.getRouter().navTo("create");
+            },
             onNavToGet: function () {
                 this.getRouter().navTo("get");
+            },
+            onNavToPut: function () {
+                this.getRouter().navTo("put");
+            },
+            onNavToDelete: function () {
+                this.getRouter().navTo("delete");
             }
         });
     }
