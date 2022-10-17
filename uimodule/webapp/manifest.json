@@ -79,6 +79,11 @@
           "pattern": "",
           "name": "appHome",
           "target": "home"
+        },
+        {
+          "pattern": "get",
+          "name": "get",
+          "target": "get"
         }
       ],
       "targets": {
@@ -91,6 +96,11 @@
           "id": "notFound",
           "name": "NotFound",
           "transition": "show"
+        },
+        "get": {
+          "id": "get",
+          "name": "Get",
+          "level": 2
         }
       }
     },
