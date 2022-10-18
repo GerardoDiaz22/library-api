@@ -54,6 +54,7 @@ const getBooks = (req, res, next) => {
             subtitle = (typeof subtitle === 'undefined') ? '' : subtitle;
             description = (typeof description === 'undefined') ? '' : description;
             categories = (typeof categories === 'undefined') ? '' : categories;
+            authors = (typeof authors === 'undefined') ? ['Anonymous'] : authors;
 
             book = {
                 "title" : title,
@@ -72,7 +73,7 @@ const getBooks = (req, res, next) => {
                 }
             });
             res.status(200).json(book);
-            
+            return;
         }
     })
     .catch((err) => {

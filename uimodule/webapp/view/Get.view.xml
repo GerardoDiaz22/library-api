@@ -7,8 +7,11 @@
         showNavButton="true"
 		navButtonPress="onNavBack">
         <headerContent>
-            <Button text="Refresh" icon="sap-icon://refresh" press="onRefreshPress"/>
-        </headerContent>
+            <SearchField
+                search=".onSearch"
+                width="100%"
+                placeholder="Harry Potter..."/>
+		</headerContent>
         <content>
             <Table
                 id="bookshelf"
