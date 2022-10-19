@@ -6,7 +6,7 @@ sap.ui.define([
     /**
      * @param {typeof sap.ui.core.mvc.Controller} Controller
      */
-    function (Controller, JSONModel) {
+    function (Controller, Filter, FilterOperator, JSONModel) {
         "use strict";
         
         return Controller.extend("lib.app.libAPI.controller.Get", {
