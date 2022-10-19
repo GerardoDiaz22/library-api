@@ -13,14 +13,15 @@ sap.ui.define([
             },
             onDeletePress: function () {
                 const bookID = this.getView().byId("bookID").getValue();
-
-                $.ajax({
-                    url: `http://localhost:8000/books/${bookID}`,
-                    method: 'DELETE'
-                })
-                .done((res) => {
-                    MessageToast.show(res);
-                });
+                if (bookID){
+                    $.ajax({
+                        url: `http://localhost:8000/books/${bookID}`,
+                        method: 'DELETE'
+                    })
+                    .done((res) => {
+                        MessageToast.show(res);
+                    });
+                }
             },
             onDeleteAllPress: function () {
                 $.ajax({
