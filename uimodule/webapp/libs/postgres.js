@@ -9,8 +9,8 @@ const pool = new Pool({
 
 const axios = require('axios');
 
-const getBooks = (req, res, next) => {
-    
+const getBooks = async(req, res, next) => {
+    //TODO: repair search by attr
     const title = (typeof req.query.title === 'undefined') ? '' : req.query.title;
     const source = (typeof req.query.source === 'undefined') ? '' : req.query.source;
     const authors = (typeof req.query.authors === 'undefined') ? '' : req.query.authors;
@@ -20,65 +20,74 @@ const getBooks = (req, res, next) => {
     const description = (typeof req.query.description === 'undefined') ? '' : req.query.description;
     // const publish_date = (typeof req.query.publish_date === 'undefined') ? '' : req.query.publish_date;
 
-    pool.query("SELECT * FROM books INNER JOIN books_info USING(book_id) INNER JOIN authors USING(author_id) INNER JOIN images USING(image_id) WHERE \
-        title ILIKE $1 AND \
-        source ILIKE $2 AND \
-        author ILIKE $3 AND \
-        editors ILIKE $4 AND \
-        subtitle ILIKE $5 AND \
-        category ILIKE $6 AND \
-        description ILIKE $7 \
-        ORDER BY book_id",
-    [
-        '%'+title+'%',
-        '%'+source+'%',
-        '%'+authors+'%',
-        '%'+editors+'%',
-        '%'+subtitle+'%',
-        '%'+category+'%',
-        '%'+description+'%'
-    ])
-    .then((data) => {
-        if (data.rows[0] != undefined) {
-            res.status(200).json(data.rows);
+    try {
+        const books = await pool.query("SELECT * FROM books INNER JOIN books_info USING(book_id) INNER JOIN authors USING(author_id) INNER JOIN images USING(image_id) WHERE \
+            title ILIKE $1 AND source ILIKE $2 AND author ILIKE $3 AND editors ILIKE $4 AND subtitle ILIKE $5 AND \
+            category ILIKE $6 AND description ILIKE $7 ORDER BY book_id",
+        [
+            '%'+title+'%', '%'+source+'%', '%'+authors+'%', '%'+editors+'%', '%'+subtitle+'%',
+            '%'+category+'%', '%'+description+'%'
+        ]);
+
+        if (books.rows[0] != undefined) {
+            res.status(200).json(books.rows);
             next();
-            return;
         }
-        return axios.get(`https://www.googleapis.com/books/v1/volumes?q=${title}`);
-    })
-    .then((googleRes) => {
-        if (googleRes != undefined) {
-            let { title, subtitle, authors, description, publishedDate, publisher, categories, imageLinks } = googleRes.data.items[0].volumeInfo;
+        else {
+            const googleRes = (title == '') ? undefined : await axios.get(`https://www.googleapis.com/books/v1/volumes?q=${title}`);
+            if (googleRes != undefined) {   
+                const books = googleRes.data.items
+                .map( (item) => {
+                    // Book info
+                    let {
+                        title, subtitle, description,
+                        authors: author,
+                        publishedDate: publish_date,
+                        publisher: editors,
+                        categories: category,
+                        imageLinks: image_path,
+                        ...rest
+                    } = item.volumeInfo;
+                    const source = "Google Books";
+                    
+                    // Parse undefined properties
+                    subtitle = (typeof subtitle === 'undefined') ? '' : subtitle;
+                    author = (typeof author === 'undefined') ? 'Anonymous' : author[0];
+                    editors = (typeof editors === 'undefined') ? '' : editors;
+                    category = (typeof category === 'undefined') ? '' : category[0];
+                    description = (typeof description === 'undefined') ? '' : description;
+                    image_path = (typeof image_path === 'undefined') ? '' : image_path.thumbnail;
+                    publish_date = (typeof publish_date === 'undefined') ? '1000-10-10' : publish_date;
+        
+                    // Format date
+                    publish_date = (/^\d{4}$/).test(publish_date) ? publish_date + '-01-01' :
+                    (/^\d{4}-\d{2}$/).test(publish_date) ? publish_date + '-01' : publish_date;
+        
+                    return { title, subtitle, author, description, publish_date, editors, category, image_path, source }
+                });
+                
+                // TODO: fix naming collision with author vs authors
+                let book = books[0];
+                book.authors = book.author;
+                delete book.author;
+                
+                // Save one book for db
+                axios.post('http://localhost:8000/books', book, {
+                    headers: {
+                        "Content-type": "application/json; charset=UTF-8",
+                    }
+                });
 
-            publisher = (typeof publisher === 'undefined') ? '' : publisher;
-            subtitle = (typeof subtitle === 'undefined') ? '' : subtitle;
-            description = (typeof description === 'undefined') ? '' : description;
-            categories = (typeof categories === 'undefined') ? '' : categories;
-            authors = (typeof authors === 'undefined') ? ['Anonymous'] : authors;
-
-            book = {
-                "title" : title,
-                "authors" : authors[0],
-                "subtitle" : subtitle,
-                "category" : categories[0],
-                "source" : "Google Books",
-                "description" : description,
-                "publish_date" : '1999-10-10', //TODO: Process date in google response
-                "image_path" : imageLinks.smallThumbnail,
-                "editors" : publisher
+                res.status(200).json(books);
             }
-            axios.post('http://localhost:8000/books', book, {
-                headers: {
-                    "Content-type": "application/json; charset=UTF-8",
-                }
-            });
-            res.status(200).json(book);
-            return;
+            else {
+                res.status(200).json({});
+            }
         }
-    })
-    .catch((err) => {
-        throw err
-    });
+    }
+    catch (err) {
+        throw err;
+    }
 }
 
 const getBookById = (req, res, next) => {
@@ -127,63 +136,62 @@ const createBook = async(req, res, next) => {
     }
 }
 
-const updateBookById = (req, res, next) => {
+const updateBookById = async(req, res, next) => {
     const id = parseInt(req.params.id);
     const { title, subtitle, category, publish_date, editors, description, authors, image_path } = req.body;
-  
-    pool.query('UPDATE books SET title = $1 WHERE book_id = $2',[title, id])
-    .then( () => {
-        pool.query('UPDATE books_info SET subtitle = $1 WHERE book_id = $2',[subtitle, id])
-    })
-    .then( () => {
-        pool.query('UPDATE books_info SET category = $1 WHERE book_id = $2',[category, id])
-    })
-    .then( () => {
-        pool.query('UPDATE books_info SET publish_date = $1 WHERE book_id = $2',[publish_date, id])
-    })
-    .then( () => {
-        pool.query('UPDATE books_info SET editors = $1 WHERE book_id = $2',[editors, id])
-    })
-    .then( () => {
-        pool.query('UPDATE books_info SET description = $1 WHERE book_id = $2',[description, id])
-    })
-    .then( () => {
-        pool.query('UPDATE books_info SET subtitle = $1 WHERE book_id = $2',[subtitle, id])
-    })
-    .then( () => {
-        return pool.query('SELECT author_id FROM books_info WHERE book_id = $1',[id]).rows[0].author_id;
-    })
-    .then( (author_id) => {
-        pool.query('UPDATE authors SET author = $1 WHERE author_id = $2',[authors,author_id]);
-    })
-    .then( () => {
-        return pool.query('SELECT image_id FROM books_info WHERE book_id = $1',[id]).rows[0].image_id;
-    })
-    .then( (image_id) => {
-        pool.query('UPDATE images SET image_path = $1 WHERE image_id = $2',[image_path, image_id]);
-    })
-    .then( () => {
+    
+    try {
+        await pool.query('UPDATE books SET title = $1 WHERE book_id = $2',[title, id]);
+        await pool.query('UPDATE books SET source = $1 WHERE book_id = $2',['internal DB', id]);
+        await pool.query('UPDATE books_info SET subtitle = $1 WHERE book_id = $2',[subtitle, id]);
+        await pool.query('UPDATE books_info SET editors = $1 WHERE book_id = $2',[editors, id]);
+        await pool.query('UPDATE books_info SET publish_date = $1 WHERE book_id = $2',[publish_date, id]);
+        await pool.query('UPDATE books_info SET description = $1 WHERE book_id = $2',[description, id]);
+        await pool.query('UPDATE books_info SET category = $1 WHERE book_id = $2',[category, id]);
+
+        const db_author = await pool.query('SELECT * FROM authors WHERE author = $1', [authors]);
+        let author_id = (db_author.rows[0] !== undefined) ? db_author :
+        await pool.query('INSERT INTO authors (author) VALUES ($1) RETURNING *', [authors]);
+        author_id = author_id.rows[0].author_id;
+
+        await pool.query('UPDATE books_info SET author_id = $1 WHERE book_id = $2',[author_id,id])
+
+        const db_image = await pool.query('SELECT * FROM images WHERE image_path = $1', [image_path]);
+        let image_id = (db_image.rows[0] !== undefined) ? db_image :
+        await pool.query('INSERT INTO images (image_path) VALUES ($1) RETURNING *', [image_path]);
+        image_id = image_id.rows[0].image_id
+
+        await pool.query('UPDATE books_info SET image_id = $1 WHERE image_id = $2',[image_id, id])
+
         res.status(200).send(`Book modified with ID: ${id}`);
-    })
-    .catch( (err) => {
+    }
+    catch (err) {
         throw err;
-    });
+    }
 
 }
 
-const deleteBookById = (req, res, next) => {
+const deleteBookById = async(req, res, next) => {
     const id = parseInt(req.params.id);
-  
-    pool.query('DELETE FROM books_info WHERE book_id = $1', [id])
-    .then( () => {
-        pool.query('DELETE FROM books WHERE book_id = $1', [id]);
-    })
-    .then( () => {
+
+    try {
+        await pool.query('DELETE FROM books_info WHERE book_id = $1', [id]);
+        await pool.query('DELETE FROM books WHERE book_id = $1', [id]);
         res.status(200).send(`Book deleted with ID: ${id}`);
-    })
-    .catch( (err) => {
+    }
+    catch (err) {
         throw err;
-    });
+    }
+}
+
+const deleteBooks = async(req, res, next) => {
+    try {
+        await pool.query('TRUNCATE books, books_info');
+        res.status(200).send(`All books deleted`);
+    }
+    catch (err) {
+        throw err;
+    }
 }
 
 module.exports = {
@@ -191,5 +199,6 @@ module.exports = {
     getBookById,
     createBook,
     updateBookById,
-    deleteBookById
+    deleteBookById,
+    deleteBooks
 }

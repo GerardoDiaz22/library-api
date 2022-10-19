@@ -21,6 +21,15 @@ sap.ui.define([
                 .done((res) => {
                     MessageToast.show(res);
                 });
+            },
+            onDeleteAllPress: function () {
+                $.ajax({
+                    url: `http://localhost:8000/books`,
+                    method: 'DELETE'
+                })
+                .done((res) => {
+                    MessageToast.show(res);
+                });
             }
         });
     }
