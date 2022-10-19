@@ -1,9 +1,9 @@
 {
   "name": "libAPI",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "scripts": {
     "start": "nodemon index.js",
-    "build:db": "psql -U gerardo -W library < db_library.sql",
+    "build:db": "psql -U postgres -W library < db_library.sql",
     "build:ui": "run-s  build:uimodule",
     "serve:uimodule": "ui5 serve --config=uimodule/ui5.yaml",
     "build:uimodule": "ui5 build --config=uimodule/ui5.yaml --clean-dest --dest uimodule/dist --include-task=generateManifestBundle"
