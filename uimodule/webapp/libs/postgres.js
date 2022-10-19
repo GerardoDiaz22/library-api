@@ -10,7 +10,7 @@ const pool = new Pool({
 const axios = require('axios');
 
 const getBooks = async(req, res, next) => {
-    
+    //TODO: repair search by attr
     const title = (typeof req.query.title === 'undefined') ? '' : req.query.title;
     const source = (typeof req.query.source === 'undefined') ? '' : req.query.source;
     const authors = (typeof req.query.authors === 'undefined') ? '' : req.query.authors;
