@@ -4,3 +4,9 @@ Web app to manage an internal library built on SAPUI5 to create, read, update an
 ## Requirements
 - Node.js
 - PostgreSQL
+
+## How to start
+```
+npm build:db
+npm start
+```
