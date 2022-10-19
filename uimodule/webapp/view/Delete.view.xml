@@ -33,6 +33,7 @@
             <OverflowToolbar>
 				<ToolbarSpacer/>
 				<Button text="Delete" type="Reject" icon="sap-icon://delete" press="onDeletePress"/>
+                <Button text="Delete All" type="Reject" icon="sap-icon://delete" press="onDeleteAllPress"/>
 			</OverflowToolbar>
         </footer>
     </Page>
