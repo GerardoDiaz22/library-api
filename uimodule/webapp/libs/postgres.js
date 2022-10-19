@@ -192,10 +192,21 @@ const deleteBookById = async(req, res, next) => {
     }
 }
 
+const deleteBooks = async(req, res, next) => {
+    try {
+        await pool.query('TRUNCATE books books_info');
+        res.status(200).send(`All books deleted`);
+    }
+    catch (err) {
+        throw err;
+    }
+}
+
 module.exports = {
     getBooks,
     getBookById,
     createBook,
     updateBookById,
-    deleteBookById
+    deleteBookById,
+    deleteBooks
 }
