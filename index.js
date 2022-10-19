@@ -19,7 +19,7 @@ app.get('/books/:id', db.getBookById);
 
 app.put('/books/:id', db.updateBookById);
 
-app.delete('/books/', db.deleteBooks);
+app.delete('/books', db.deleteBooks);
 
 app.delete('/books/:id', db.deleteBookById);
 
