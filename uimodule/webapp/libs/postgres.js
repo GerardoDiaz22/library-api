@@ -10,7 +10,7 @@ const pool = new Pool({
 const axios = require('axios');
 
 const getBooks = async(req, res, next) => {
-    //TODO: repair search by attr
+    
     const title = (typeof req.query.title === 'undefined') ? '' : req.query.title;
     const source = (typeof req.query.source === 'undefined') ? '' : req.query.source;
     const authors = (typeof req.query.authors === 'undefined') ? '' : req.query.authors;
@@ -18,7 +18,8 @@ const getBooks = async(req, res, next) => {
     const subtitle = (typeof req.query.subtitle === 'undefined') ? '' : req.query.subtitle;
     const category = (typeof req.query.category === 'undefined') ? '' : req.query.category;
     const description = (typeof req.query.description === 'undefined') ? '' : req.query.description;
-    // const publish_date = (typeof req.query.publish_date === 'undefined') ? '' : req.query.publish_date;
+
+    //TODO: get publish_date
 
     try {
         const books = await pool.query("SELECT * FROM books INNER JOIN books_info USING(book_id) INNER JOIN authors USING(author_id) INNER JOIN images USING(image_id) WHERE \
@@ -34,8 +35,31 @@ const getBooks = async(req, res, next) => {
             next();
         }
         else {
-            const googleRes = (title == '') ? undefined : await axios.get(`https://www.googleapis.com/books/v1/volumes?q=${title}`);
-            if (googleRes != undefined) {   
+
+            let googleQuery = '';
+            if (title){
+                googleQuery += `intitle:${title}`;
+            }
+            if (authors){
+                googleQuery += `inauthor:${authors}`;
+            }
+            if (category){
+                googleQuery += `subject:${category}`;
+            }
+            if (editors){
+                googleQuery += `inpublisher:${editors}`;
+            }
+            if (description){
+                googleQuery += `indescription:${description}`;
+            }
+            if (subtitle){
+                googleQuery += `intitle:${subtitle}`; //TODO: check if exist query
+            }
+
+            let googleRes = (googleQuery === '') ? undefined :
+            await axios.get(`https://www.googleapis.com/books/v1/volumes?q=${googleQuery}&maxResults=40`);
+            
+            if (googleRes != undefined && googleRes.data.totalItems != 0) {
                 const books = googleRes.data.items
                 .map( (item) => {
                     // Book info
@@ -62,20 +86,21 @@ const getBooks = async(req, res, next) => {
                     // Format date
                     publish_date = (/^\d{4}$/).test(publish_date) ? publish_date + '-01-01' :
                     (/^\d{4}-\d{2}$/).test(publish_date) ? publish_date + '-01' : publish_date;
+
+                    
+                    // TODO: fix naming collision with author vs authors
+                    const authors = author;
         
-                    return { title, subtitle, author, description, publish_date, editors, category, image_path, source }
+                    return { title, subtitle, author, authors, description, publish_date, editors, category, image_path, source }
                 });
-                
-                // TODO: fix naming collision with author vs authors
-                let book = books[0];
-                book.authors = book.author;
-                delete book.author;
-                
-                // Save one book for db
-                axios.post('http://localhost:8000/books', book, {
-                    headers: {
-                        "Content-type": "application/json; charset=UTF-8",
-                    }
+                           
+                // Save all books for db
+                books.forEach(async(book) => {
+                    await axios.post('http://localhost:8000/books', book, {
+                        headers: {
+                            "Content-type": "application/json; charset=UTF-8",
+                        }
+                    });
                 });
 
                 res.status(200).json(books);
@@ -161,7 +186,7 @@ const updateBookById = async(req, res, next) => {
         await pool.query('INSERT INTO images (image_path) VALUES ($1) RETURNING *', [image_path]);
         image_id = image_id.rows[0].image_id
 
-        await pool.query('UPDATE books_info SET image_id = $1 WHERE image_id = $2',[image_id, id])
+        await pool.query('UPDATE books_info SET image_id = $1 WHERE book_id = $2',[image_id, id])
 
         res.status(200).send(`Book modified with ID: ${id}`);
     }
