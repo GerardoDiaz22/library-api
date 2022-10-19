@@ -12,6 +12,7 @@
             <form:SimpleForm
                 id="putForm"
                 title="New Book Details"
+                width="auto" class="sapUiResponsiveMargin"
                 editable="true"
                 layout="ResponsiveGridLayout"
                 singleContainerFullSize="false"
