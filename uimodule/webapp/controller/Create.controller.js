@@ -17,10 +17,12 @@ sap.ui.define([
                 const authors = this.getView().byId("bookAuthors").getValue();
                 const editors = this.getView().byId("bookEditors").getValue();
                 const category = this.getView().byId("bookCategory").getValue();
-                const publishDate = this.getView().byId("bookPublishDate").getValue();
                 const imagePath = this.getView().byId("bookImage").getValue();
                 const description = this.getView().byId("bookDescription").getValue();
-
+                
+                let publishDate = this.getView().byId("bookPublishDate").getValue();
+                publishDate = (publishDate == '') ? '1000-10-10' : publishDate;
+                
                 $.ajax({
                     url: "http://localhost:8000/books",
                     method: 'POST',
@@ -31,7 +33,7 @@ sap.ui.define([
                         "authors": authors,
                         "editors": editors,
                         "category": category,
-                        "publish_date": '1999-10-10',
+                        "publish_date": publishDate,
                         "image_path": imagePath,
                         "description": description
                     }
