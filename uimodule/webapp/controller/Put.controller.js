@@ -4,7 +4,7 @@ sap.ui.define([
     /**
      * @param {typeof sap.ui.core.mvc.Controller} Controller
      */
-    function (Controller) {
+    function (Controller, MessageToast) {
         "use strict";
         
         return Controller.extend("lib.app.libAPI.controller.Put", {
