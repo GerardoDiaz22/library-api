@@ -1,72 +1,94 @@
 <mvc:View controllerName="lib.app.libAPI.controller.Get"
     xmlns:mvc="sap.ui.core.mvc"
+    xmlns:core="sap.ui.core"
     displayBlock="true"
     xmlns="sap.m">
     <Page
         title="Read Database"
         showNavButton="true"
 		navButtonPress="onNavBack">
-        <headerContent>
-            <SearchField
-                search=".onSearch"
-                width="100%"
-                placeholder="Harry Potter..."/>
-		</headerContent>
-        <content>
-            <Table
-                id="bookshelf"
-                items="{
-                    path: '/'
-                }">
-                <columns>
-                    <Column>
-                        <Text text="ID"/>
-                    </Column>
-                    <Column>
-                        <Text text="Title"/>
-                    </Column>
-                    <Column>
-                        <Text text="Subtitle"/>
-                    </Column>
-                    <Column>
-                        <Text text="Authors"/>
-                    </Column>
-                    <Column>
-                        <Text text="Editors"/>
-                    </Column>
-                    <Column>
-                        <Text text="Category"/>
-                    </Column>
-                    <Column>
-                        <Text text="Publish Date"/>
-                    </Column>
-                    <Column>
-                        <Text text="Image"/>
-                    </Column>
-                    <Column>
-                        <Text text="Description"/>
-                    </Column>
-                    <Column>
-                        <Text text="Source"/>
-                    </Column>
-                </columns>
-                <items>
-                    <ColumnListItem vAlign="Middle">
-                        <cells>
-                            <Text text="{book_id}"/>
-                            <Text text="{title}"/>
-                            <Text text="{subtitle}"/>
-                            <Text text="{author}"/>
-                            <Text text="{editors}"/>
-                            <Text text="{category}"/>
-                            <Text text="{publish_date}"/>
-                            <Image width="125px" src="{image_path}"/>
-                            <ExpandableText text="{description}"/>
-                            <Text text="{source}"/>
-                        </cells>
-                    </ColumnListItem>
-                </items>
-            </Table>
-        </content>
+        <Panel width="auto" class="sapUiResponsiveMargin">
+            <headerToolbar>
+                <OverflowToolbar
+                height="3em">
+                    <Title text="Bookshelf" titleStyle="H4"/>
+                    <ToolbarSpacer/>
+                    <Button icon="sap-icon://refresh" press="onRefreshPress"/>
+                    <Select
+                        id="selectMenu"
+                        forceSelection="false"
+                        selectedKey="{/SelectedAttribute}"
+                        items="{
+                            path: '/Attributes'
+                        }">
+                        <core:Item key="{AttrId}" text="{Name}" />
+                    </Select>
+                    <SearchField
+                    search=".onSearch"
+                    width="20%"
+                    placeholder="Harry Potter..."/>
+                </OverflowToolbar>
+            </headerToolbar>
+            <content>
+                <Table
+                    id="bookshelf"
+                    items="{
+                        path: '/'
+                    }">
+                    <columns>
+                        <Column
+                            width="5%">
+                            <Text text="ID"/>
+                        </Column>
+                        <Column
+                            width="15%">
+                            <Text text="Title"/>
+                        </Column>
+                        <Column>
+                            <Text text="Subtitle"/>
+                        </Column>
+                        <Column>
+                            <Text text="Authors"/>
+                        </Column>
+                        <Column>
+                            <Text text="Editors"/>
+                        </Column>
+                        <Column>
+                            <Text text="Category"/>
+                        </Column>
+                        <Column>
+                            <Text text="Publish Date"/>
+                        </Column>
+                        <Column
+                            width="12%">
+                            <Text text="Image"/>
+                        </Column>
+                        <Column>
+                            <Text text="Description"/>
+                        </Column>
+                        <Column
+                            width="7%">
+                            <Text text="Source"/>
+                        </Column>
+                    </columns>
+                    <items>
+                        <ColumnListItem vAlign="Middle">
+                            <cells>
+                                <Text text="{book_id}"/>
+                                <Text text="{title}"/>
+                                <Text text="{subtitle}"/>
+                                <Text text="{author}"/>
+                                <Text text="{editors}"/>
+                                <Text text="{category}"/>
+                                <Text text="{publish_date}"/>
+                                <Image width="125px" height="160px" src="{image_path}"/>
+                                <ExpandableText text="{description}"/>
+                                <Text text="{source}"/>
+                            </cells>
+                        </ColumnListItem>
+                    </items>
+                </Table>
+            </content>
+        </Panel>
     </Page>
 </mvc:View>
