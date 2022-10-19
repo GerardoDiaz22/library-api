@@ -48,31 +48,48 @@ const getBooks = (req, res, next) => {
     })
     .then((googleRes) => {
         if (googleRes != undefined) {
-            let { title, subtitle, authors, description, publishedDate, publisher, categories, imageLinks } = googleRes.data.items[0].volumeInfo;
 
-            publisher = (typeof publisher === 'undefined') ? '' : publisher;
-            subtitle = (typeof subtitle === 'undefined') ? '' : subtitle;
-            description = (typeof description === 'undefined') ? '' : description;
-            categories = (typeof categories === 'undefined') ? '' : categories;
-            authors = (typeof authors === 'undefined') ? ['Anonymous'] : authors;
+            const books = googleRes.data.items
+            .map( (item) => {
+                // Book info
+                let {
+                    title, subtitle, description,
+                    authors: author,
+                    publishedDate: publish_date,
+                    publisher: editors,
+                    categories: category,
+                    imageLinks: image_path,
+                    ...rest
+                } = item.volumeInfo;
+                const source = "Google Books";
+                
+                // Parse undefined properties
+                subtitle = (typeof subtitle === 'undefined') ? '' : subtitle;
+                author = (typeof author === 'undefined') ? 'Anonymous' : author[0];
+                editors = (typeof editors === 'undefined') ? '' : editors;
+                category = (typeof category === 'undefined') ? '' : category[0];
+                description = (typeof description === 'undefined') ? '' : description;
+                image_path = (typeof image_path === 'undefined') ? '' : image_path.thumbnail;
 
-            book = {
-                "title" : title,
-                "authors" : authors[0],
-                "subtitle" : subtitle,
-                "category" : categories[0],
-                "source" : "Google Books",
-                "description" : description,
-                "publish_date" : '1999-10-10', //TODO: Process date in google response
-                "image_path" : imageLinks.smallThumbnail,
-                "editors" : publisher
-            }
+                // Format date
+                publish_date = (/^\d{4}$/).test(publish_date) ? publish_date + '-01-01' :
+                (/^\d{4}-\d{2}$/).test(publish_date) ? publish_date + '-01' : publish_date;
+
+                return { title, subtitle, author, description, publish_date, editors, category, image_path, source }
+            });
+            
+            // TODO: fix naming collision with author vs authors
+            let book = books[0];
+            book.authors = book.author;
+            delete book.author;
+
+
             axios.post('http://localhost:8000/books', book, {
                 headers: {
                     "Content-type": "application/json; charset=UTF-8",
                 }
             });
-            res.status(200).json(book);
+            res.status(200).json(books);
             return;
         }
     })
