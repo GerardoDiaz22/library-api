@@ -9,7 +9,7 @@ const pool = new Pool({
 
 const axios = require('axios');
 
-const getBooks = (req, res, next) => {
+const getBooks = async(req, res, next) => {
     
     const title = (typeof req.query.title === 'undefined') ? '' : req.query.title;
     const source = (typeof req.query.source === 'undefined') ? '' : req.query.source;
@@ -20,82 +20,74 @@ const getBooks = (req, res, next) => {
     const description = (typeof req.query.description === 'undefined') ? '' : req.query.description;
     // const publish_date = (typeof req.query.publish_date === 'undefined') ? '' : req.query.publish_date;
 
-    pool.query("SELECT * FROM books INNER JOIN books_info USING(book_id) INNER JOIN authors USING(author_id) INNER JOIN images USING(image_id) WHERE \
-        title ILIKE $1 AND \
-        source ILIKE $2 AND \
-        author ILIKE $3 AND \
-        editors ILIKE $4 AND \
-        subtitle ILIKE $5 AND \
-        category ILIKE $6 AND \
-        description ILIKE $7 \
-        ORDER BY book_id",
-    [
-        '%'+title+'%',
-        '%'+source+'%',
-        '%'+authors+'%',
-        '%'+editors+'%',
-        '%'+subtitle+'%',
-        '%'+category+'%',
-        '%'+description+'%'
-    ])
-    .then((data) => {
-        if (data.rows[0] != undefined) {
-            res.status(200).json(data.rows);
+    try {
+        const books = await pool.query("SELECT * FROM books INNER JOIN books_info USING(book_id) INNER JOIN authors USING(author_id) INNER JOIN images USING(image_id) WHERE \
+            title ILIKE $1 AND source ILIKE $2 AND author ILIKE $3 AND editors ILIKE $4 AND subtitle ILIKE $5 AND \
+            category ILIKE $6 AND description ILIKE $7 ORDER BY book_id",
+        [
+            '%'+title+'%', '%'+source+'%', '%'+authors+'%', '%'+editors+'%', '%'+subtitle+'%',
+            '%'+category+'%', '%'+description+'%'
+        ]);
+
+        if (books.rows[0] != undefined) {
+            res.status(200).json(books.rows);
             next();
-            return;
         }
-        return axios.get(`https://www.googleapis.com/books/v1/volumes?q=${title}`);
-    })
-    .then((googleRes) => {
-        if (googleRes != undefined) {
-
-            const books = googleRes.data.items
-            .map( (item) => {
-                // Book info
-                let {
-                    title, subtitle, description,
-                    authors: author,
-                    publishedDate: publish_date,
-                    publisher: editors,
-                    categories: category,
-                    imageLinks: image_path,
-                    ...rest
-                } = item.volumeInfo;
-                const source = "Google Books";
+        else {
+            const googleRes = (title == '') ? undefined : await axios.get(`https://www.googleapis.com/books/v1/volumes?q=${title}`);
+            if (googleRes != undefined) {   
+                const books = googleRes.data.items
+                .map( (item) => {
+                    // Book info
+                    let {
+                        title, subtitle, description,
+                        authors: author,
+                        publishedDate: publish_date,
+                        publisher: editors,
+                        categories: category,
+                        imageLinks: image_path,
+                        ...rest
+                    } = item.volumeInfo;
+                    const source = "Google Books";
+                    
+                    // Parse undefined properties
+                    subtitle = (typeof subtitle === 'undefined') ? '' : subtitle;
+                    author = (typeof author === 'undefined') ? 'Anonymous' : author[0];
+                    editors = (typeof editors === 'undefined') ? '' : editors;
+                    category = (typeof category === 'undefined') ? '' : category[0];
+                    description = (typeof description === 'undefined') ? '' : description;
+                    image_path = (typeof image_path === 'undefined') ? '' : image_path.thumbnail;
+                    publish_date = (typeof publish_date === 'undefined') ? '1000-10-10' : publish_date;
+        
+                    // Format date
+                    publish_date = (/^\d{4}$/).test(publish_date) ? publish_date + '-01-01' :
+                    (/^\d{4}-\d{2}$/).test(publish_date) ? publish_date + '-01' : publish_date;
+        
+                    return { title, subtitle, author, description, publish_date, editors, category, image_path, source }
+                });
                 
-                // Parse undefined properties
-                subtitle = (typeof subtitle === 'undefined') ? '' : subtitle;
-                author = (typeof author === 'undefined') ? 'Anonymous' : author[0];
-                editors = (typeof editors === 'undefined') ? '' : editors;
-                category = (typeof category === 'undefined') ? '' : category[0];
-                description = (typeof description === 'undefined') ? '' : description;
-                image_path = (typeof image_path === 'undefined') ? '' : image_path.thumbnail;
+                // TODO: fix naming collision with author vs authors
+                let book = books[0];
+                book.authors = book.author;
+                delete book.author;
+                
+                // Save one book for db
+                axios.post('http://localhost:8000/books', book, {
+                    headers: {
+                        "Content-type": "application/json; charset=UTF-8",
+                    }
+                });
 
-                // Format date
-                publish_date = (/^\d{4}$/).test(publish_date) ? publish_date + '-01-01' :
-                (/^\d{4}-\d{2}$/).test(publish_date) ? publish_date + '-01' : publish_date;
-
-                return { title, subtitle, author, description, publish_date, editors, category, image_path, source }
-            });
-            
-            // TODO: fix naming collision with author vs authors
-            let book = books[0];
-            book.authors = book.author;
-            delete book.author;
-
-
-            axios.post('http://localhost:8000/books', book, {
-                headers: {
-                    "Content-type": "application/json; charset=UTF-8",
-                }
-            });
-            res.status(200).json(books);
-            return;
+                res.status(200).json(books);
+            }
+            else {
+                res.status(200).json({});
+            }
         }
-    })
-    .catch((err) => {
-        throw err
-    });
+    }
+    catch (err) {
+        throw err;
+    }
 }
 
 const getBookById = (req, res, next) => {
@@ -194,7 +186,7 @@ const deleteBookById = async(req, res, next) => {
 
 const deleteBooks = async(req, res, next) => {
     try {
-        await pool.query('TRUNCATE books books_info');
+        await pool.query('TRUNCATE books, books_info');
         res.status(200).send(`All books deleted`);
     }
     catch (err) {
