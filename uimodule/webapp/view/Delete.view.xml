@@ -12,6 +12,7 @@
             <form:SimpleForm
                 id="deleteForm"
                 title="Delete Book"
+                width="auto" class="sapUiResponsiveMargin"
                 editable="true"
                 layout="ResponsiveGridLayout"
                 singleContainerFullSize="false"
@@ -33,7 +34,7 @@
             <OverflowToolbar>
 				<ToolbarSpacer/>
 				<Button text="Delete" type="Reject" icon="sap-icon://delete" press="onDeletePress"/>
-                <Button text="Delete All" type="Reject" icon="sap-icon://delete" press="onDeleteAllPress"/>
+                <Button text="Delete All" type="Reject" icon="sap-icon://sys-cancel" press="onDeleteAllPress"/>
 			</OverflowToolbar>
         </footer>
     </Page>
