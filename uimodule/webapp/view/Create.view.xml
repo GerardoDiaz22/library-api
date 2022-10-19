@@ -11,6 +11,7 @@
         <content>
             <form:SimpleForm
                 id="createForm"
+                width="auto" class="sapUiResponsiveMargin"
                 title="Book Details"
                 editable="true"
                 layout="ResponsiveGridLayout"
