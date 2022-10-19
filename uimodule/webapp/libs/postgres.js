@@ -144,63 +144,52 @@ const createBook = async(req, res, next) => {
     }
 }
 
-const updateBookById = (req, res, next) => {
+const updateBookById = async(req, res, next) => {
     const id = parseInt(req.params.id);
     const { title, subtitle, category, publish_date, editors, description, authors, image_path } = req.body;
-  
-    pool.query('UPDATE books SET title = $1 WHERE book_id = $2',[title, id])
-    .then( () => {
-        pool.query('UPDATE books_info SET subtitle = $1 WHERE book_id = $2',[subtitle, id])
-    })
-    .then( () => {
-        pool.query('UPDATE books_info SET category = $1 WHERE book_id = $2',[category, id])
-    })
-    .then( () => {
-        pool.query('UPDATE books_info SET publish_date = $1 WHERE book_id = $2',[publish_date, id])
-    })
-    .then( () => {
-        pool.query('UPDATE books_info SET editors = $1 WHERE book_id = $2',[editors, id])
-    })
-    .then( () => {
-        pool.query('UPDATE books_info SET description = $1 WHERE book_id = $2',[description, id])
-    })
-    .then( () => {
-        pool.query('UPDATE books_info SET subtitle = $1 WHERE book_id = $2',[subtitle, id])
-    })
-    .then( () => {
-        return pool.query('SELECT author_id FROM books_info WHERE book_id = $1',[id]).rows[0].author_id;
-    })
-    .then( (author_id) => {
-        pool.query('UPDATE authors SET author = $1 WHERE author_id = $2',[authors,author_id]);
-    })
-    .then( () => {
-        return pool.query('SELECT image_id FROM books_info WHERE book_id = $1',[id]).rows[0].image_id;
-    })
-    .then( (image_id) => {
-        pool.query('UPDATE images SET image_path = $1 WHERE image_id = $2',[image_path, image_id]);
-    })
-    .then( () => {
+    
+    try {
+        await pool.query('UPDATE books SET title = $1 WHERE book_id = $2',[title, id]);
+        await pool.query('UPDATE books SET source = $1 WHERE book_id = $2',['internal DB', id]);
+        await pool.query('UPDATE books_info SET subtitle = $1 WHERE book_id = $2',[subtitle, id]);
+        await pool.query('UPDATE books_info SET editors = $1 WHERE book_id = $2',[editors, id]);
+        await pool.query('UPDATE books_info SET publish_date = $1 WHERE book_id = $2',[publish_date, id]);
+        await pool.query('UPDATE books_info SET description = $1 WHERE book_id = $2',[description, id]);
+        await pool.query('UPDATE books_info SET category = $1 WHERE book_id = $2',[category, id]);
+
+        const db_author = await pool.query('SELECT * FROM authors WHERE author = $1', [authors]);
+        let author_id = (db_author.rows[0] !== undefined) ? db_author :
+        await pool.query('INSERT INTO authors (author) VALUES ($1) RETURNING *', [authors]);
+        author_id = author_id.rows[0].author_id;
+
+        await pool.query('UPDATE books_info SET author_id = $1 WHERE book_id = $2',[author_id,id])
+
+        const db_image = await pool.query('SELECT * FROM images WHERE image_path = $1', [image_path]);
+        let image_id = (db_image.rows[0] !== undefined) ? db_image :
+        await pool.query('INSERT INTO images (image_path) VALUES ($1) RETURNING *', [image_path]);
+        image_id = image_id.rows[0].image_id
+
+        await pool.query('UPDATE books_info SET image_id = $1 WHERE image_id = $2',[image_id, id])
+
         res.status(200).send(`Book modified with ID: ${id}`);
-    })
-    .catch( (err) => {
+    }
+    catch (err) {
         throw err;
-    });
+    }
 
 }
 
-const deleteBookById = (req, res, next) => {
+const deleteBookById = async(req, res, next) => {
     const id = parseInt(req.params.id);
-  
-    pool.query('DELETE FROM books_info WHERE book_id = $1', [id])
-    .then( () => {
-        pool.query('DELETE FROM books WHERE book_id = $1', [id]);
-    })
-    .then( () => {
+
+    try {
+        await pool.query('DELETE FROM books_info WHERE book_id = $1', [id]);
+        await pool.query('DELETE FROM books WHERE book_id = $1', [id]);
         res.status(200).send(`Book deleted with ID: ${id}`);
-    })
-    .catch( (err) => {
+    }
+    catch (err) {
         throw err;
-    });
+    }
 }
 
 module.exports = {
